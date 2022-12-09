@@ -1,38 +1,42 @@
 #pragma once
-#include <iostream>
-#include "DoubleLinkedList.h"
+#include<vector>
+#include<ostream>
 
-enum Connectivity
-{
-    NOT_CONNECTED = 0,
-    WEAKLY_CONNECTED = 1,
-    UNILATERALLY_CONNECTED = 2,
-    STRONGLY_CONNECTED = 3
-};
+class Graph {
+public:
+    Graph();
+    Graph(int numberOfVertices);
+    Graph(const Graph &other);
 
-class Graph
-{
-    private:
-        int n;                  // size of graph
-        DoubleLinkedList **adj;  // adjacency list
-        int capacity;
-        bool is_vertex_in_range(int) const;
-    public:
-        Graph();
-        Graph(int);
-        Graph(const Graph &);
-        ~Graph();
-        bool add_edge(int, int);
-        void remove_edge(int, int);
-        bool edge_exist(int, int) const;
-        int get_degree(int) const;
-        Graph &operator++();
-        Graph operator++(int);
-        Graph &operator--();
-        Graph operator--(int);
-        bool path_exist(int, int) const;
-        friend std::ostream &operator<<(std::ostream &os, const Graph &);
-        Connectivity connectivity_type() const;
-        DoubleLinkedList BFS(int) const;        
-        DoubleLinkedList DFS(int) const;
+    int size();
+    bool add_edge(int from, int to);
+    bool vertex_exists(int vertex) const;
+    bool edge_exists(int from, int to) const;
+    bool remove_edge(int from, int to);
+
+    int get_degree(int vertex) const;
+
+    bool path_exists(int from, int to) const;
+
+    friend std::ostream& operator<<(std::ostream &o, const Graph &graph);
+    void operator=(const Graph &other);
+    Graph& operator++();
+    Graph operator++(int);
+    Graph& operator--();
+    Graph operator--(int);
+
+    std::vector<int> bfs(int initial) const;
+    std::vector<int> dfs(int initial) const;
+
+protected:
+
+    struct AdjancyListItem {
+        int nodeId;
+        std::vector<int> adjancyNodes;
+    };
+
+    std::vector<AdjancyListItem> adjancyList;
+
+    template<typename T>
+    bool vectorContains(std::vector<T> vect, T item) const;
 };

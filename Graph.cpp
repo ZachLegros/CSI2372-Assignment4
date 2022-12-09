@@ -1,284 +1,197 @@
 #include "Graph.h"
-#define INCREMENT_SIZE 10
+#include <vector>
+#include <ostream>
 
-Graph::Graph()
-{
-    this->n = 1;
-    adj = new DoubleLinkedList*[n];
-    capacity = n;
-    for (int i = 0; i < n; i++)
-    {
-        DoubleLinkedList *a = new DoubleLinkedList();
-        adj[i] = a;
+
+Graph::Graph() {
+
+}
+
+Graph::Graph(const Graph &other): adjancyList(other.adjancyList) {
+
+}
+
+Graph::Graph(int numberOfVertices) {
+    for(int i=0; i<numberOfVertices; i++) {
+        adjancyList.push_back({i, std::vector<int>()});
     }
 }
 
-Graph::Graph(int n)
+int Graph::size()
 {
-    this->n = n;
-    adj = new DoubleLinkedList*[n];
-    capacity = n;
-    for (int i = 0; i < n; i++)
-    {
-        DoubleLinkedList *a = new DoubleLinkedList();
-        adj[i] = a;
-    }
+    return adjancyList.size();
 }
 
-Graph::Graph(const Graph &other)
-{
-    this->n = other.n;
-    adj = new DoubleLinkedList*[other.n];
-    capacity = other.capacity;
 
-    for (int i = 0; i < other.n; i++)
-    {
-        adj[i] = new DoubleLinkedList();
-        DoubleLinkedList *vertices = other.adj[i];
-        int degree = vertices->count_nodes();
-        for (int j = 0; j < degree; j++)
-        {
-            adj[i]->add_to_back((*vertices)[j]);
+std::ostream& operator<<(std::ostream &o, const Graph &graph) {
+    o << "V = {";
+    for(int i=0; i<(int)graph.adjancyList.size()-1; i++) {
+        o << graph.adjancyList[i].nodeId << ", ";
+    }
+    if(graph.adjancyList.size()  > 1) {
+        o << graph.adjancyList[graph.adjancyList.size()-1].nodeId;
+    }
+    o << "}\n";
+
+    o << "E =\n{\n";
+
+    for(int i=0; i<(int)graph.adjancyList.size(); i++) {
+        o << "\t" << graph.adjancyList[i].nodeId << " => ";
+        if(graph.adjancyList[i].adjancyNodes.size() > 0) {
+            for(int j=0; j<(int)graph.adjancyList[i].adjancyNodes.size()-1; j++) {
+                o << graph.adjancyList[i].adjancyNodes[j] << ", ";
+            }
+            o << graph.adjancyList[i].adjancyNodes[graph.adjancyList[i].adjancyNodes.size()-1]<< "\n";
+
+        } else {
+            o << "None\n";
         }
     }
-}
-
-Graph::~Graph()
-{
-    for (int i = 0; i < n; i++)
-    {
-        delete adj[i];
-    }
-    delete[] adj;
-}
-
-bool Graph::is_vertex_in_range(int v) const
-{
-    return !(v > n || v < 1);
-}
-
-bool Graph::add_edge(int v1, int v2)
-{
-    if (!is_vertex_in_range(v1) || !is_vertex_in_range(v2))
-        return false;
+    o << "}";
     
-    adj[v1 - 1]->add_to_back(v2);
+    return o;
+
+}
+
+void Graph::operator=(const Graph &other) {
+    adjancyList = other.adjancyList;
+}
+
+
+bool Graph::add_edge(int from, int to) {
+    if(!vertex_exists(from) || !vertex_exists(to)) {
+        return false;
+    }
+    
+    // if edge already exists, we want to return falses
+    if(edge_exists(from, to) || edge_exists(to, from)) {
+        return false;
+    }
+
+    // add the node to the adjancy list
+    adjancyList[from].adjancyNodes.push_back(to);
+    adjancyList[to].adjancyNodes.push_back(from);
+    
     return true;
 }
 
-void Graph::remove_edge(int v1, int v2)
-{
-    if (!is_vertex_in_range(v1) || !is_vertex_in_range(v2))
-        return;
-    
-    adj[v1 - 1]->remove_item(v2);
-}
+bool Graph::vertex_exists(int vertexId) const {
 
-bool Graph::edge_exist(int v1, int v2) const
-{
-    if (!is_vertex_in_range(v1) || !is_vertex_in_range(v2))
-        return false;
-    
-    return adj[v1 - 1]->find(v2);   
-}
-
-int Graph::get_degree(int v) const
-{
-    if (!is_vertex_in_range(v))
-        return 0;
-    
-    return adj[v - 1]->count_nodes();
-}
-
-Graph &Graph::operator++()
-{
-    if (n >= capacity)
-    {
-        DoubleLinkedList **new_adj = new DoubleLinkedList*[capacity + INCREMENT_SIZE];
-        std::copy(adj, adj + capacity, new_adj);
-        delete[] adj;
-        adj = new_adj;
-        capacity += INCREMENT_SIZE;
+    for(auto it = adjancyList.begin(); it != adjancyList.end(); ++it) {
+        if (it->nodeId == vertexId) return true;
     }
 
-    adj[n++] = new DoubleLinkedList();
-    return *this;
-}
-
-Graph Graph::operator++(int)
-{
-    Graph cp(*this);
-    ++(*this);
-    return cp;
-}
-
-Graph &Graph::operator--()
-{
-    if (n <= 0) return *this;
-
-    for (int i = 0; i < n - 1; i++)
-    {
-        if (edge_exist(i+1, n))
-            adj[i]->remove_item(n);
-    }
-
-    delete adj[--n];
-    return *this;
-}
-
-Graph Graph::operator--(int)
-{
-    Graph cp(*this);
-    --(*this);
-    return cp;
-}
-
-bool Graph::path_exist(int v1, int v2) const
-{
-    DoubleLinkedList dfs = this->DFS(v1);
-    int size = dfs.count_nodes();
-    for (int i = 0; i < size; i++)
-    {
-        if (dfs[i] == v2)
-            return true;
-    }
     return false;
 }
 
-DoubleLinkedList Graph::DFS(int v) const
-{
-    DoubleLinkedList result;
-    // if root vertex is invalid, return empty list
-    if (!is_vertex_in_range(v))
-        return result;
-
-    DoubleLinkedList stack;
-    bool visited[n];
-    for (int i = 0; i < n; i++)
-        visited[i] = false;
-
-    stack.add_to_back(v);
-    while(stack.count_nodes() > 0)
-    {
-        int current = stack.get_tail();
-        stack.remove_from_back();
-        if (visited[current] == false)
-        {
-            visited[current] = true;
-            result.add_to_back(current);
-            // add children to stack
-            int degree = get_degree(current);
-            for (int i = degree - 1; i >= 0; i--)
-            {
-                stack.add_to_back((*adj[current - 1])[i]);
-            }
-        }
+bool Graph::edge_exists(int from, int to) const {
+    if(!vertex_exists(from) || !vertex_exists(to)) {
+        return false;
     }
-    return result;
+
+    for(auto it = adjancyList[from].adjancyNodes.begin(); it != adjancyList[from].adjancyNodes.end(); ++it) {
+        if (*it == to) return true;
+    }
+
+    return false;
 }
 
-DoubleLinkedList Graph::BFS(int v) const
-{
-    DoubleLinkedList result;
-    // if root vertex is invalid, return empty list
-    if (!is_vertex_in_range(v))
-        return result;
+bool Graph::remove_edge(int from, int to) {
+    if(!edge_exists(from, to)) {
+        return false;
+    }
 
-    DoubleLinkedList queue;
-    bool visited[n];
-    for (int i = 0; i < n; i++)
-        visited[i] = false;
-
-    queue.add_to_front(v);
-    while(queue.count_nodes() > 0)
-    {
-        int current = queue.get_head();
-        queue.remove_from_front();
-        if (visited[current] == false)
-        {
-            visited[current] = true;
-            result.add_to_back(current);
-            // add children to queue
-            int degree = get_degree(current);
-            for (int i = 0; i < degree; i++)
-            {
-                queue.add_to_back((*adj[current - 1])[i]);
-            }
+    for(auto it=adjancyList[from].adjancyNodes.begin(); it != adjancyList[from].adjancyNodes.end(); ++it) {
+        if(*it == to) {
+            adjancyList[from].adjancyNodes.erase(it);
+            return true;
         }
     }
-    return result;
+
+    for(auto it=adjancyList[to].adjancyNodes.begin(); it != adjancyList[to].adjancyNodes.end(); ++it) {
+        if(*it == to) {
+            adjancyList[to].adjancyNodes.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+    
 }
 
-Connectivity Graph::connectivity_type() const
-{
-    // create undirected graph
-    Graph undirected(*this);
-    for (int i = 0; i < undirected.n; i++)
-    {
-        int degree = undirected.get_degree(i+1);
-        for (int j = 0; j < degree; j++)
-        {
-            if (!undirected.edge_exist((*undirected.adj[i])[j], i+1))
-                undirected.add_edge((*undirected.adj[i])[j], i+1);
+int Graph::get_degree(int vertex) const {
+    if(!vertex_exists(vertex)) {
+        return -1;
+    }
+
+    return adjancyList[vertex].adjancyNodes.size();
+}
+
+Graph& Graph::operator++() {
+    AdjancyListItem item = {(int)this->adjancyList.size(), std::vector<int>()};
+    this->adjancyList.push_back(item);
+    return *this;
+}
+
+Graph Graph::operator++(int) {
+    Graph other = *this;
+    AdjancyListItem item = {(int)this->adjancyList.size(), std::vector<int>()};
+    this->adjancyList.push_back(item);
+    return other;
+}
+
+Graph& Graph::operator--() {
+    this->adjancyList.pop_back();
+    return *this;
+}
+
+Graph Graph::operator--(int) {
+    Graph other = *this;
+    this->adjancyList.pop_back();
+    return other;
+}
+
+
+std::vector<int> Graph::bfs(int initial) const {
+    if(!vertex_exists(initial)) {
+        return std::vector<int>();
+    }
+    std::vector<int> toExplore;
+    std::vector<int> explored;
+    toExplore.push_back(initial);
+
+    while(toExplore.size() > 0) {
+        int current = toExplore.at(0);
+        toExplore.erase(toExplore.begin());
+        
+
+        if(vectorContains(explored, current)) {
+            continue;
         }
+        for(int i=0; i<(int)adjancyList[current].adjancyNodes.size(); i++) {
+            int node = adjancyList[current].adjancyNodes[i];
+            if(!vectorContains(explored, node) && node != current) {
+                toExplore.push_back(node);
+            }
+        }
+        explored.push_back(current);
     }
     
-    bool is_strongly_connected = true;
-    bool is_unilaterally_connected = true;
-    bool is_weakly_connected = true;
-    for (int i = 0; i < n; i++)
-    {
-        int degree = get_degree(i+1);
-        for (int j = 0; j < n; j++)
-        {
-            if (j == n) continue;
-            bool i_j_exist = path_exist(i+1, j+1);
-            bool j_i_exist = path_exist(j+1, i+1);
-            bool un_i_j_exist = undirected.path_exist(i+1, j+1);
-            bool un_j_i_exist = undirected.path_exist(j+1, i+1);
-            is_strongly_connected &= i_j_exist && j_i_exist;
-            is_unilaterally_connected &= i_j_exist || j_i_exist;
-            is_weakly_connected &= un_i_j_exist || un_j_i_exist;
-        }
-    }
-
-    if (is_strongly_connected) return STRONGLY_CONNECTED;
-    if (is_unilaterally_connected) return UNILATERALLY_CONNECTED;    
-    if (is_weakly_connected) return WEAKLY_CONNECTED;
-    return NOT_CONNECTED;
+    return explored;
 }
 
+bool Graph::path_exists(int from, int to) const {
+    if(!vertex_exists(from) || !vertex_exists(to)) {
+        return false;
+    }
+    return vectorContains(bfs(from), to);
+}
 
-std::ostream &operator<<(std::ostream &os, const Graph &g)
-{
-    os << "V = {";
-    for (int i = 1; i < g.n+1; i++)
-    {
-        os << i;
-        if (i < g.n)
-           os << ", ";
+template<typename T>
+bool Graph::vectorContains(std::vector<T> vect, T item) const {
+    for(auto it = vect.begin(); it != vect.end(); ++it) {
+        if(*it == item) return true;
     }
-    os << "}" << std::endl;
-    os << "E =" << std::endl;
-    os << "{" << std::endl;
-    for (int i = 0; i < g.n; i++)
-    {
-        os << " " << i+1 << " => ";
-        int degree = g.get_degree(i+1);
-        if (degree == 0)
-            os << "None";
-        else
-        {
-            for (int j = 0; j < degree; j++)
-            {
-                os << (*g.adj[i])[j];
-                if (j < degree - 1)
-                    os << ", ";
-            }
-        }
-        os << std::endl;
-    }
-    os << "}" << std::endl;
-    
-    return os;
+
+    return false;
 }
