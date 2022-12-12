@@ -2,33 +2,37 @@
 // Zachary Legros 300136274
 
 #include "Forest.h"
+#include "Graph.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
-Forest::Forest(): Graph() {
-    
+Forest::Forest() : Graph()
+{
 }
-Forest::Forest(int num): Graph(num) {
-
+Forest::Forest(int num) : Graph(num)
+{
 }
 
 bool Forest::add_edge(int v1, int v2)
 {
-    if(!vertex_exists(v1) || !vertex_exists(v2)) {
+    if (!vertex_exists(v1) || !vertex_exists(v2))
+    {
         return false;
     }
-    
+
     // if edge already exists, we want to return falses
-    if(edge_exists(v1, v2)) {
+    if (edge_exists(v1, v2))
+    {
         return false;
     }
 
     adjancyList[v1].adjancyNodes.push_back(v2);
     adjancyList[v2].adjancyNodes.push_back(v1);
 
-    if(has_cycle(v2))
+    if (has_cycle(v2))
     {
+        std::cout << "removed:" << v1 << ", " << v2 << std::endl;
         remove_edge(v1, v2);
         return false;
     }
@@ -46,13 +50,14 @@ bool Forest::has_cycle(int initialNode)
     stack.push_back(initialNode);
 
     int previous = -1;
-    while(stack.size() > 0)
+    while (stack.size() > 0)
     {
-        int current = *(stack.end()-1);
+        int current = *(stack.end() - 1);
         stack.pop_back();
         if (visited[current] == false)
         {
-            if(previous == current) {
+            if (previous == current)
+            {
                 continue;
             }
             visited[current] = true;
@@ -62,7 +67,7 @@ bool Forest::has_cycle(int initialNode)
                 stack.push_back(*itr);
             }
             previous = current;
-        } 
+        }
         else
         {
             return true;

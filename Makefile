@@ -2,7 +2,12 @@ PROJECT = "assignment4"
 
 build:TestForest.cpp Forest.cpp Graph.cpp
 	g++ TestForest.cpp Forest.cpp Graph.cpp -std=c++11 -ggdb3 -g -O0 -Wall -Wextra -o $(PROJECT)
+	
+buildTree: TestTree.cpp Tree.cpp Forest.cpp Graph.cpp
+	g++ TestTree.cpp Tree.cpp Forest.cpp Graph.cpp -std=c++11 -ggdb3 -g -O0 -Wall -Wextra -o $(PROJECT)
 
+buildForest: TestForest.cpp Forest.cpp Graph.cpp
+	g++ TestForest.cpp Forest.cpp Graph.cpp -std=c++11 -ggdb3 -g -O0 -Wall -Wextra -o $(PROJECT)
 
 buildGraph: TestGraph.cpp Graph.cpp
 	g++ TestGraph.cpp Graph.cpp -std=c++11 -ggdb3 -g -O0 -Wall -Wextra -o $(PROJECT)
