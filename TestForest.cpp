@@ -3,6 +3,9 @@
 #include<iostream>
 #include<string>
 
+// Sébastien Girard 300133000
+// Zachary Legros 300136274
+
 int main() {
 
 

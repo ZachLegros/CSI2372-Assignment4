@@ -1,3 +1,6 @@
+// Sébastien Girard 300133000
+// Zachary Legros 300136274
+
 #include "Forest.h"
 #include <iostream>
 #include <vector>
