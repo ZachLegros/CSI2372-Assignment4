@@ -1,10 +1,10 @@
+// Sébastien Girard 300133000
+// Zachary Legros 300136274
 #include"Forest.h"
 #include"TestUtils.h"
 #include<iostream>
 #include<string>
 
-// Sébastien Girard 300133000
-// Zachary Legros 300136274
 
 int main()
 {

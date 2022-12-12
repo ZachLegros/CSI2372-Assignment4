@@ -1,3 +1,7 @@
+// Sébastien Girard 300133000
+// Zachary Legros 300136274
+
+
 #include "Tree.h"
 #include <algorithm>
 
