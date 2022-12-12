@@ -39,7 +39,7 @@ bool BiPartite::isBiPartite() {
     while(!queue.empty()) {
         AdjancyListItem current = queue.at(queue.size() - 1);
         queue.pop_back();
-        for(int i = 0; i < current.adjancyNodes.size(); i++) { // for each adjancy node
+        for(int i = 0; i < (int)current.adjancyNodes.size(); i++) { // for each adjancy node
             int adj = current.adjancyNodes.at(i);
             if(colors[adj] == -1) {
                 colors[adj] = 1 - colors[current.nodeId];
